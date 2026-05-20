@@ -67,6 +67,7 @@ export class Game {
 
         // We'll take a copy of the processed answer so we can mutate it
         const answer = new Map([...this._processedAnswer]);
+        const leftOvers = {};
 
         // First things first, we'll find all the correctly placed guesses
         // and remove those from our process answer...
@@ -84,6 +85,7 @@ export class Game {
             // answer so that it's not checked in the next step.
             if (remainingIndices.length > 0) {
                 answer[digit] = remainingIndices;
+                leftOvers[digit] = remainingIndices.length;
             } else {
                 answer.delete(digit);
             }
@@ -93,10 +95,11 @@ export class Game {
         // if what's left is misplaced or wrong.
         guessParts.forEach((next, idx) => {
             if (!response[idx]) {
-                if (answer.has(next)) {
+                if (leftOvers[next] && leftOvers[next] > 0) {
                     response[idx] = DigitPlacement.misplaced;
+                    leftOvers[next] = leftOvers[next] - 1;
                 } else {
-                   response[idx] = DigitPlacement.wrong;
+                    response[idx] = DigitPlacement.wrong;
                 }
             }
         });

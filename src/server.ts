@@ -55,6 +55,11 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     
     const game = games.get(gameId);
 
+    if (!game) {
+        res.status(404).json({error: `Game ${gameId} not found`});
+        return;
+    }
+
     if (game.finished) {
         res.status(400).json({error: 'Game already finished'});
         return;
