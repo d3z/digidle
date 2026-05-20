@@ -7,7 +7,7 @@ app.use(express.json());
 const games: Map<number, Game> = new Map<number, Game>();
 let nextGameId = 0;
 
-app.get('/new', (_: Request, res: Response) => {
+app.post('/games', (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (2026 - 1900 + 1)) + 1900;
     const game = new Game(randomAnswer);
     games.set(nextGameId, game);
@@ -17,17 +17,18 @@ app.get('/new', (_: Request, res: Response) => {
 app.get('/games', (_: Request, res: Response) => {
     const gamesData = [];
     for (const [id, game] of games) {
-        gamesData.push({
+        const gameResult = {
             id,
             remainingGuesses: game.remainingGuesses,
             finished: game.finished,
             solved: game.solved,
-        });
+        };
+        gamesData.push(gameResult);
     }
     res.json(gamesData);
 });
 
-app.put('/:id/:guess', (req: Request, res: Response) => {
+app.put('/games/:id/:guess', (req: Request, res: Response) => {
     const {id, guess} = req.params;
     if (typeof id !== 'string') {
         res.status(400).json({error: 'Invalid game id'});
@@ -42,13 +43,15 @@ app.put('/:id/:guess', (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
-    console.log(games);
     if (!games.has(gameId)) {
         res.status(404).json({error: 'Game not found'});
     }
     const game = games.get(gameId);
     const guessNumber = parseInt(guess);
     const response = game?.makeAttempt(guessNumber);
+    if (response === 'solved') {
+        game.solved = true;
+    }
     res.json({response});
 });
 

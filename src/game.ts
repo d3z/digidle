@@ -7,13 +7,13 @@ enum DigitPlacement {
 type Response = DigitPlacement[] | 'game_over' | 'solved';
 
 export class Game {
-    private answer: string;
+    private answer: Map<string, number[]>;
     
     attempts = 0;
     solved = false;
 
     constructor(answerNumber: number, private maxAttempts = 5) {
-        this.answer = `${answerNumber}`;
+        this.answer = this.processAnswer(answerNumber);
     }
 
     get remainingGuesses(): number {
@@ -32,17 +32,32 @@ export class Game {
         return 'game_over';
     }
 
+    private processAnswer(answerNumber: number): Map<string,  number[]> {
+        const answerParts = `${answerNumber}`.split('');
+        const answer = new Map<string, number[]>();
+
+        answerParts.forEach((nextDigit, idx) => {
+            const indices = answer.getOrInsert(nextDigit, []);
+            indices.push(idx);
+            answer.set(nextDigit, indices);
+        });
+
+        return answer;
+    }
+
     private checkGuess(guess: number): Response {
         const response: Response = [];
         const guessParts = `${guess}`.split('');
         guessParts.forEach((next, idx) => {
-            const nextIdx = this.answer.indexOf(next);
-            if (nextIdx === idx) {
-                response.push(DigitPlacement.correct);
-            } else if (nextIdx === -1) {
-                response.push(DigitPlacement.wrong);
+            if (this.answer.has(next)) {
+                const indices = this.answer.get(next);
+                if (indices.includes(idx)) {
+                    response.push(DigitPlacement.correct);
+                } else {
+                    response.push(DigitPlacement.misplaced);
+                }
             } else {
-                response.push(DigitPlacement.misplaced);
+                response.push(DigitPlacement.wrong);
             }
         });
         if (this.isSolved(response)) {
