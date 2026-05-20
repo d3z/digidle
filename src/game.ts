@@ -85,19 +85,19 @@ export class Game {
             if (remainingIndices.length > 0) {
                 answer[digit] = remainingIndices;
             } else {
-                delete answer[digit];
+                answer.delete(digit);
             }
         }
 
         // ...and then look through what's left of our answer and check
         // if what's left is misplaced or wrong.
         guessParts.forEach((next, idx) => {
-            if (answer.has(next)) {
-                if (!response[idx]) {
+            if (!response[idx]) {
+                if (answer.has(next)) {
                     response[idx] = DigitPlacement.misplaced;
+                } else {
+                   response[idx] = DigitPlacement.wrong;
                 }
-            } else {
-                response[idx] = DigitPlacement.wrong;
             }
         });
 
