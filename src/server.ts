@@ -54,6 +54,12 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     }
     
     const game = games.get(gameId);
+
+    if (game.finished) {
+        res.status(400).json({error: 'Game already finished'});
+        return;
+    }
+
     const guessNumber = parseInt(guess);
     const response = game.makeGuess(guessNumber);
     if (response === 'solved') {
