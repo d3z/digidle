@@ -1,0 +1,80 @@
+openapi: '3.1.1'
+info:
+  title: Digidle
+  version: '1.0'
+  description: A simple game of guess the year.
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /games:
+    get:
+      responses:
+        '200':
+          description: List all games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameResponse'
+    post:
+      responses:
+        '201':
+          description: New game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewGameResponse'
+    put:
+      responses:
+        '200':
+          description: Guess accepted
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GuessResponseArray'
+                  - $ref: '#/components/schemas/GuessResponseString'
+
+components:
+  schemas:
+    NewGameResponse:
+      description: The response returned when a new game is successfully created.
+      type: object
+      properties:
+        id:
+          type: integer
+    GameResponse:
+      description: Describes the state of an existing game.
+      type: object
+      properties:
+        id:
+          type: integer
+        remainingGuesses:
+          type: integer
+        finished:
+          type: boolean
+        solved:
+          type: boolean
+        answer:
+          type: string
+    GuessResponseArray:
+      description: Describes the result of a guess.
+      type: object
+      properties:
+        response:
+          type: array
+        answer:
+          type: string
+    GuessResponseString:
+      description: The response returned when a guess is made to a finshed game.
+      type: object
+      properties:
+        response:
+          type: string
+          enum:
+            - 'solved'
+            - 'finished'
+        answer:
+          type: string
