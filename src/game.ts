@@ -88,15 +88,10 @@ export class Game {
         return response;
     }
 
-    private isSolved(response: Response): boolean{
+    private isSolved(response: Response): boolean {
         if (response === 'solved') return true;
         if (response === 'game_over') return false;
 
-        for (const result of response) {
-            if (result != DigitPlacement.correct) {
-                return false;
-            }
-        }
-        return true;
+        return response.every(r => r === DigitPlacement.correct);
     }
 }
