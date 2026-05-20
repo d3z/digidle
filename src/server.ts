@@ -33,6 +33,8 @@ app.get('/games', (_: Request, res: Response) => {
 });
 
 app.put('/games/:id/:guess', (req: Request, res: Response) => {
+    // We do some validation on the guess before passing it to
+    // the game instance for checking
     const {id, guess} = req.params;
     if (typeof id !== 'string') {
         res.status(400).json({error: 'Invalid game id'});
@@ -50,9 +52,10 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     if (!games.has(gameId)) {
         res.status(404).json({error: 'Game not found'});
     }
+    
     const game = games.get(gameId);
     const guessNumber = parseInt(guess);
-    const response = game?.makeAttempt(guessNumber);
+    const response = game.makeGuess(guessNumber);
     if (response === 'solved') {
         game.solved = true;
     }

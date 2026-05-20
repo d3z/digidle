@@ -23,17 +23,21 @@ export class Game {
     }
 
     get finished(): boolean {
+        // A game is finished if it's been solved or there
+        // are no more guesses allowed.
         return this.solved || this.remainingGuesses <= 0;
     }
 
     get answer(): string {
+        // We only want to return the actual answer
+        // if the game has already finished.
         if (this.finished) {
             return this._answer;
         }
         return 'X'.repeat(this._answer.length);
     }
 
-    makeAttempt(guess: number): Response {
+    makeGuess(guess: number): Response {
         if (!this.finished) {
             this.attempts++;
             return this.checkGuess(guess);
@@ -42,6 +46,9 @@ export class Game {
     }
 
     private processAnswer(answerNumber: number): Map<string,  number[]> {
+        // We take the answer generated for this game and pre-process it
+        // so that we have all the digits and their indices propulated 
+        // and ready to match against guesses.
         const answerParts = `${answerNumber}`.split('');
         const answer = new Map<string, number[]>();
 
@@ -57,7 +64,12 @@ export class Game {
     private checkGuess(guess: number): Response {
         const response: Response = [];
         const guessParts = `${guess}`.split('');
+
+        // We'll take a copy of the processed answer so we can mutate it
         const answer = new Map([...this._processedAnswer]);
+
+        // First things first, we'll find all the correctly placed guesses
+        // and remove those from our process answer...
         for (const [digit, indices] of answer) {
             const remainingIndices = [];
             for (const idx of indices) {
@@ -67,12 +79,18 @@ export class Game {
                     remainingIndices.push(idx);
                 }
             }
+            // Check if there are any indices left for this
+            // digit and if not, simply remove it from the 
+            // answer so that it's not checked in the next step.
             if (remainingIndices.length > 0) {
                 answer[digit] = remainingIndices;
             } else {
                 delete answer[digit];
             }
         }
+
+        // ...and then look through what's left of our answer and check
+        // if what's left is misplaced or wrong.
         guessParts.forEach((next, idx) => {
             if (answer.has(next)) {
                 if (!response[idx]) {
@@ -82,6 +100,7 @@ export class Game {
                 response[idx] = DigitPlacement.wrong;
             }
         });
+
         if (this.isSolved(response)) {
             return 'solved';
         }
