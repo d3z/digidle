@@ -9,18 +9,24 @@ type Response = DigitPlacement[] | 'game_over';
 export class Game {
     private answer: string;
     private attempts: number;
+    
+    solved = false;
 
     constructor(answerNumber: number, private maxAttempts = 5) {
         this.answer = `${answerNumber}`;
         this.attempts = 0;
     }
 
-    haveAttemptsLeft(): boolean {
-        return this.attempts <= this.maxAttempts;
+    get remainingGuesses(): number {
+        return this.maxAttempts - this.attempts;
+    }
+
+    get finished(): boolean {
+        return this.solved || this.remainingGuesses <= 0;
     }
 
     makeAttempt(guess: number): Response {
-        if (this.haveAttemptsLeft()) {
+        if (!this.finished) {
             this.attempts++;
             return this.checkGuess(guess);
         }

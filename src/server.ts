@@ -14,6 +14,19 @@ app.get('/new', (_: Request, res: Response) => {
     res.json({id: nextGameId++});
 });
 
+app.get('/games', (_: Request, res: Response) => {
+    const gamesData = [];
+    for (const [id, game] of games) {
+        gamesData.push({
+            id,
+            remainingGuesses: game.remainingGuesses,
+            finished: game.finished,
+            solved: game.solved,
+        });
+    }
+    res.json(gamesData);
+});
+
 app.put('/:id/:guess', (req: Request, res: Response) => {
     const {id, guess} = req.params;
     if (typeof id !== 'string') {
