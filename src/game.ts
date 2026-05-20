@@ -7,13 +7,15 @@ enum DigitPlacement {
 type Response = DigitPlacement[] | 'game_over' | 'solved';
 
 export class Game {
-    private answer: Map<string, number[]>;
+    private _processedAnswer: Map<string, number[]>;
+    private _answer: string;
     
     attempts = 0;
     solved = false;
 
-    constructor(answerNumber: number, private maxAttempts = 5) {
-        this.answer = this.processAnswer(answerNumber);
+    constructor(answer: number, private maxAttempts = 5) {
+        this._processedAnswer = this.processAnswer(answer);
+        this._answer = `${answer}`;
     }
 
     get remainingGuesses(): number {
@@ -22,6 +24,13 @@ export class Game {
 
     get finished(): boolean {
         return this.solved || this.remainingGuesses <= 0;
+    }
+
+    get answer(): string {
+        if (this.finished) {
+            return this._answer;
+        }
+        return 'X'.repeat(this._answer.length);
     }
 
     makeAttempt(guess: number): Response {
@@ -48,16 +57,29 @@ export class Game {
     private checkGuess(guess: number): Response {
         const response: Response = [];
         const guessParts = `${guess}`.split('');
-        guessParts.forEach((next, idx) => {
-            if (this.answer.has(next)) {
-                const indices = this.answer.get(next);
-                if (indices.includes(idx)) {
-                    response.push(DigitPlacement.correct);
+        const answer = new Map([...this._processedAnswer]);
+        for (const [digit, indices] of answer) {
+            const remainingIndices = [];
+            for (const idx of indices) {
+                if (guessParts[idx] === digit) {
+                    response[idx] = DigitPlacement.correct;
                 } else {
-                    response.push(DigitPlacement.misplaced);
+                    remainingIndices.push(idx);
+                }
+            }
+            if (remainingIndices.length > 0) {
+                answer[digit] = remainingIndices;
+            } else {
+                delete answer[digit];
+            }
+        }
+        guessParts.forEach((next, idx) => {
+            if (answer.has(next)) {
+                if (!response[idx]) {
+                    response[idx] = DigitPlacement.misplaced;
                 }
             } else {
-                response.push(DigitPlacement.wrong);
+                response[idx] = DigitPlacement.wrong;
             }
         });
         if (this.isSolved(response)) {

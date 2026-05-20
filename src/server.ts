@@ -7,8 +7,11 @@ app.use(express.json());
 const games: Map<number, Game> = new Map<number, Game>();
 let nextGameId = 0;
 
+const MIN_ANSWER = 1000;
+const MAX_ANSWER = 2026;
+
 app.post('/games', (_: Request, res: Response) => {
-    const randomAnswer = Math.floor(Math.random() * (2026 - 1900 + 1)) + 1900;
+    const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
     const game = new Game(randomAnswer);
     games.set(nextGameId, game);
     res.json({id: nextGameId++});
@@ -22,6 +25,7 @@ app.get('/games', (_: Request, res: Response) => {
             remainingGuesses: game.remainingGuesses,
             finished: game.finished,
             solved: game.solved,
+            answer: game.answer,
         };
         gamesData.push(gameResult);
     }
@@ -52,7 +56,7 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     if (response === 'solved') {
         game.solved = true;
     }
-    res.json({response});
+    res.json({response, answer:game.answer});
 });
 
 app.listen(3000, () => {
