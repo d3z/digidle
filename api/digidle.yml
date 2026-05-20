@@ -1,8 +1,8 @@
-openapi: '3.1.1'
+openapi: 3.1.1
 info:
   title: Digidle
   version: '1.0'
-  description: A simple game of guess the year.
+  description: A simple game of guess the year. Kinda like Wordle for numbers.
 servers:
   - url: http://localhost:3000
 
@@ -27,6 +27,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/NewGameResponse'
     put:
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: guess
+          required: true
+          in: path
+          schema:
+            type: integer
       responses:
         '200':
           description: Guess accepted
@@ -74,7 +85,7 @@ components:
         response:
           type: string
           enum:
-            - 'solved'
-            - 'finished'
+            - solved
+            - finished
         answer:
           type: string
