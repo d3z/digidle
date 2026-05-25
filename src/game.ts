@@ -1,10 +1,4 @@
-enum DigitPlacement {
-    wrong,
-    misplaced,
-    correct
-};
-
-type Response = DigitPlacement[] | 'game_over' | 'solved';
+import { DigitPlacement, GuessResult } from "./types.ts";
 
 export class Game {
     private _processedAnswer: Map<string, number[]>;
@@ -37,12 +31,12 @@ export class Game {
         return 'X'.repeat(this._answer.length);
     }
 
-    makeGuess(guess: number): Response {
+    makeGuess(guess: number): GuessResult {
         if (!this.finished) {
             this.attempts++;
             return this.checkGuess(guess);
         }
-        return 'game_over';
+        return {type: 'game_over'}
     }
 
     private processAnswer(answerNumber: number): Map<string,  number[]> {
@@ -61,9 +55,10 @@ export class Game {
         return answer;
     }
 
-    private checkGuess(guess: number): Response {
-        const response: Response = [];
+    private checkGuess(guess: number): GuessResult {
         const guessParts = `${guess}`.split('');
+
+        const placements: DigitPlacement[] = [];
 
         // We'll take a copy of the processed answer so we can mutate it
         const answer = new Map([...this._processedAnswer]);
@@ -75,7 +70,7 @@ export class Game {
             const remainingIndices = [];
             for (const idx of indices) {
                 if (guessParts[idx] === digit) {
-                    response[idx] = DigitPlacement.correct;
+                    placements[idx] = DigitPlacement.correct;
                 } else {
                     remainingIndices.push(idx);
                 }
@@ -94,27 +89,27 @@ export class Game {
         // ...and then look through what's left of our answer and check
         // if what's left is misplaced or wrong.
         guessParts.forEach((next, idx) => {
-            if (!response[idx]) {
+            if (!placements[idx]) {
                 const remaining = leftOvers.get(next) ?? 0;
                 if (remaining > 0) {
-                    response[idx] = DigitPlacement.misplaced;
+                    placements[idx] = DigitPlacement.misplaced;
                     leftOvers.set(next, remaining - 1);
                 } else {
-                    response[idx] = DigitPlacement.wrong;
+                    placements[idx] = DigitPlacement.wrong;
                 }
             }
         });
 
-        if (this.isSolved(response)) {
-            return 'solved';
+        if (this.isSolved(placements)) {
+            return {type:'solved', answer:this.answer}
+        } else if (this.finished) {
+            return {type: 'game_over', answer:this.answer}
         }
-        return response;
+
+        return {type:'unsolved', result: placements, remainingGuesses:this.remainingGuesses};
     }
 
-    private isSolved(response: Response): boolean {
-        if (response === 'solved') return true;
-        if (response === 'game_over') return false;
-
-        return response.every(r => r === DigitPlacement.correct);
+    private isSolved(placements: DigitPlacement[]): boolean {
+        return placements.every(r => r === DigitPlacement.correct);
     }
 }

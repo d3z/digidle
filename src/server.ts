@@ -66,20 +66,10 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     }
 
     const guessNumber = parseInt(guess);
-    const response = game.makeGuess(guessNumber);
-    const responseObject = { response };
+    const result = game.makeGuess(guessNumber);
 
-    if (response === 'solved') {
-        game.solved = true;
-    } 
-
-    if (game.finished) {
-        responseObject['answer'] = game.answer;
-    } else {
-        responseObject['remainingGuesses'] = game.remainingGuesses;
-    }
-
-    res.json(responseObject);
+    game.solved = result.type === 'solved';
+    res.json(result);
 });
 
 app.listen(3000, () => {
