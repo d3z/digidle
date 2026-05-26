@@ -36,7 +36,7 @@ export class Game {
             this.attempts++;
             return this.checkGuess(guess);
         }
-        return {type: 'game_over'}
+        return {type: 'game_over', answer:this.answer};
     }
 
     private processAnswer(answerNumber: number): Map<string,  number[]> {

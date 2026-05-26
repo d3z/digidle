@@ -1,5 +1,7 @@
 {
 	"compilerOptions": {
+		"strict": true,
+		"allowImportingTsExtensions": true,
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"target": "esnext",
