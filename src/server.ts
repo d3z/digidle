@@ -11,32 +11,30 @@ let nextGameId = 0;
 const MIN_ANSWER = 1000;
 const MAX_ANSWER = 2026;
 
-app.post('/games', (_: Request, res: Response) => {
+app.post('/games', async (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
     const game = new Game(randomAnswer);
-    const games = kv.get('games').value ?? new Map<number, Game>();
-    games.set(nextGameId, game);
-    kv.set(['games', nextGameId], game);
+    await kv.set(['games', nextGameId], game);
     res.json({id: nextGameId++});
 });
 
-app.get('/games', (_: Request, res: Response) => {
+app.get('/games', async (_: Request, res: Response) => {
     const gamesData = [];
-    const games = kv.get('games').value ?? new Map<number, Game>();
-    for (const [id, game] of games) {
-        const gameResult = {
-            id,
+    const entries = kv.list<Game>({ prefix: ['games'] });
+    for await (const entry of entries) {
+        const game = entry.value;
+        gamesData.push({
+            id: entry.key[1],
             remainingGuesses: game.remainingGuesses,
             finished: game.finished,
             solved: game.solved,
             answer: game.answer,
-        };
-        gamesData.push(gameResult);
+        });
     }
     res.json(gamesData);
 });
 
-app.delete('/games/:id', (req: Request, res: Response) => {
+app.delete('/games/:id', async (req: Request, res: Response) => {
     const {id} = req.params;
     if (typeof id !== 'string') {
         res.status(400).json({error: 'Invalid game id'});
@@ -47,17 +45,16 @@ app.delete('/games/:id', (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
-    const games = kv.get('games').value ?? new Map<number, Game>();
-    if (!games.has(gameId)) {
+    const entry = await kv.get(['games', gameId]);
+    if (!entry.value) {
         res.status(404).json({error: 'Game not found'});
         return;
     }
-    games.delete(gameId);
-    kv.set('games', games);
+    await kv.delete(['games', gameId]);
     res.json({message: `Game ${gameId} deleted`});
 });
 
-app.put('/games/:id/:guess', (req: Request, res: Response) => {
+app.put('/games/:id/:guess', async (req: Request, res: Response) => {
     // We do some validation on the guess before passing it to
     // the game instance for checking
     const {id, guess} = req.params;
@@ -74,15 +71,10 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
-    const games = kv.get('games').value ?? new Map<number, Game>();
-    if (!games.has(gameId)) {
-        res.status(404).json({error: 'Game not found'});
-    }
-    
-    const game = games.get(gameId);
+    const game = (await kv.get<Game>(['games', gameId])).value;
 
     if (!game) {
-        res.status(404).json({error: `Game ${gameId} not found`});
+        res.status(404).json({error: 'Game not found'});
         return;
     }
 
