@@ -20,6 +20,10 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+    devDependencies:
+      '@types/deno':
+        specifier: ^2.7.0
+        version: 2.7.0
 
 packages:
 
@@ -54,6 +58,9 @@ packages:
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
+
+  '@types/deno@2.7.0':
+    resolution: {integrity: sha512-Y6fWcV8KpYeO3Lik/RiYnUxtr/LWqoeACciU0CA+dr1U/45tGgaX3HWQQAPCNN53raN4Rr4Fht4y6qsUH57fDA==}
 
   '@types/express-serve-static-core@5.1.1':
     resolution: {integrity: sha512-v4zIMr/cX7/d2BpAEX3KNKL/JrT1s43s96lLvvdTmza1oEvDudCqK9aF/djc/SWgy8Yh0h30TZx5VpzqFCxk5A==}
@@ -419,6 +426,8 @@ snapshots:
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 25.8.0
+
+  '@types/deno@2.7.0': {}
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
