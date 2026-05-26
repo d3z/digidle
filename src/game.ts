@@ -101,6 +101,7 @@ export class Game {
         });
 
         if (this.isSolved(placements)) {
+            this.solved = true;
             return {type:'solved', answer:this.answer}
         } else if (this.finished) {
             return {type: 'game_over', answer:this.answer, solved: this.solved}
