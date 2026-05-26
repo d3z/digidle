@@ -36,7 +36,7 @@ export class Game {
             this.attempts++;
             return this.checkGuess(guess);
         }
-        return {type: 'game_over', answer:this.answer};
+        return {type: 'game_over', answer:this.answer, solved: this.solved};
     }
 
     private processAnswer(answerNumber: number): Map<string,  number[]> {
@@ -103,7 +103,7 @@ export class Game {
         if (this.isSolved(placements)) {
             return {type:'solved', answer:this.answer}
         } else if (this.finished) {
-            return {type: 'game_over', answer:this.answer}
+            return {type: 'game_over', answer:this.answer, solved: this.solved}
         }
 
         return {type:'unsolved', result: placements, remainingGuesses:this.remainingGuesses};
