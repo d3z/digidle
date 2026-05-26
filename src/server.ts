@@ -1,10 +1,11 @@
 import express, {type Request, type Response} from 'express';
 import { Game } from './game.ts';
 
+const kv = await Deno.openKv();
+
 const app = express();
 app.use(express.json());
 
-const games: Map<number, Game> = new Map<number, Game>();
 let nextGameId = 0;
 
 const MIN_ANSWER = 1000;
@@ -13,12 +14,15 @@ const MAX_ANSWER = 2026;
 app.post('/games', (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
     const game = new Game(randomAnswer);
+    const games = kv.get('games').value ?? new Map<number, Game>();
     games.set(nextGameId, game);
+    kv.set(['games', nextGameId], game);
     res.json({id: nextGameId++});
 });
 
 app.get('/games', (_: Request, res: Response) => {
     const gamesData = [];
+    const games = kv.get('games').value ?? new Map<number, Game>();
     for (const [id, game] of games) {
         const gameResult = {
             id,
@@ -43,11 +47,13 @@ app.delete('/games/:id', (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
+    const games = kv.get('games').value ?? new Map<number, Game>();
     if (!games.has(gameId)) {
         res.status(404).json({error: 'Game not found'});
         return;
     }
     games.delete(gameId);
+    kv.set('games', games);
     res.json({message: `Game ${gameId} deleted`});
 });
 
@@ -68,6 +74,7 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
+    const games = kv.get('games').value ?? new Map<number, Game>();
     if (!games.has(gameId)) {
         res.status(404).json({error: 'Game not found'});
     }
@@ -88,6 +95,7 @@ app.put('/games/:id/:guess', (req: Request, res: Response) => {
     const result = game.makeGuess(guessNumber);
 
     game.solved = result.type === 'solved';
+    kv.set(['games', gameId], game);
     res.json(result);
 });
 
