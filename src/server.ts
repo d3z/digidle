@@ -6,6 +6,12 @@ const kv = await Deno.openKv();
 const app = express();
 app.use(express.json());
 
+async function getGame(id: number): Promise<Game | null> {
+    const raw = (await kv.get<Game>(['games', id])).value;
+    if (!raw) return null;
+    return Object.assign(new Game(raw.answer), raw);
+}
+
 let nextGameId = 0;
 
 const MIN_ANSWER = 1000;
@@ -71,7 +77,7 @@ app.put('/games/:id/:guess', async (req: Request, res: Response) => {
         res.status(400).json({error: 'Invalid game id'});
         return;
     }
-    const game = (await kv.get<Game>(['games', gameId])).value;
+    const game = await getGame(gameId);
 
     if (!game) {
         res.status(404).json({error: 'Game not found'});
