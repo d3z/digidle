@@ -16,7 +16,7 @@ async function getGame(id: number): Promise<Game | null> {
     return hydrateGame(raw);
 }
 
-let nextGameId = 0;
+let nextGameId = (await kv.get<number>(['nextGameId'])).value ?? 0;
 
 const MIN_ANSWER = 1000;
 const MAX_ANSWER = 2026;
@@ -25,7 +25,8 @@ app.post('/games', async (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
     const game = new Game(randomAnswer);
     await kv.set(['games', nextGameId], game);
-    res.json({id: nextGameId++});
+    res.json({id: nextGameId});
+    await kv.set(['nextGameId'], ++nextGameId);
 });
 
 app.get('/games', async (_: Request, res: Response) => {
