@@ -6,10 +6,14 @@ const kv = await Deno.openKv();
 const app = express();
 app.use(express.json());
 
+function hydrateGame(raw: Game): Game {
+    return Object.assign(new Game(raw.answer), raw);
+}
+
 async function getGame(id: number): Promise<Game | null> {
     const raw = (await kv.get<Game>(['games', id])).value;
     if (!raw) return null;
-    return Object.assign(new Game(raw.answer), raw);
+    return hydrateGame(raw);
 }
 
 let nextGameId = 0;
@@ -28,9 +32,10 @@ app.get('/games', async (_: Request, res: Response) => {
     const gamesData = [];
     const entries = kv.list<Game>({ prefix: ['games'] });
     for await (const entry of entries) {
-        const game = entry.value;
+        const id = entry.key[1] as number;
+        const game = hydrateGame(entry.value);
         gamesData.push({
-            id: entry.key[1],
+            id,
             remainingGuesses: game.remainingGuesses,
             finished: game.finished,
             solved: game.solved,

@@ -7,7 +7,7 @@ export class Game {
     attempts = 0;
     solved = false;
 
-    constructor(answer: number, private maxAttempts = 5) {
+    constructor(answer: number|string, private maxAttempts = 5) {
         this._processedAnswer = this.processAnswer(answer);
         this._answer = `${answer}`;
     }
@@ -39,7 +39,7 @@ export class Game {
         return {type: 'game_over', answer:this.answer, solved: this.solved};
     }
 
-    private processAnswer(answerNumber: number): Map<string,  number[]> {
+    private processAnswer(answerNumber: number|string): Map<string,  number[]> {
         // We take the answer generated for this game and pre-process it
         // so that we have all the digits and their indices propulated 
         // and ready to match against guesses.
