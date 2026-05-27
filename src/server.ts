@@ -23,7 +23,7 @@ const MAX_ANSWER = 9999;
 
 app.post('/games', async (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
-    const game = new Game(randomAnswer);
+    const game = new Game(randomAnswer, 10);
     await kv.set(['games', nextGameId], game);
     res.json({id: nextGameId});
     await kv.set(['nextGameId'], ++nextGameId);
