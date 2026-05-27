@@ -18,8 +18,8 @@ async function getGame(id: number): Promise<Game | null> {
 
 let nextGameId = (await kv.get<number>(['nextGameId'])).value ?? 0;
 
-const MIN_ANSWER = 1000;
-const MAX_ANSWER = 2026;
+const MIN_ANSWER = 1;
+const MAX_ANSWER = 9999;
 
 app.post('/games', async (_: Request, res: Response) => {
     const randomAnswer = Math.floor(Math.random() * (MAX_ANSWER - MIN_ANSWER + 1)) + MIN_ANSWER;
