@@ -46,26 +46,6 @@ app.get('/games', async (_: Request, res: Response) => {
     res.json(gamesData);
 });
 
-app.delete('/games/:id', async (req: Request, res: Response) => {
-    const {id} = req.params;
-    if (typeof id !== 'string') {
-        res.status(400).json({error: 'Invalid game id'});
-        return;
-    }
-    const gameId = parseInt(id);
-    if (isNaN(gameId)) {
-        res.status(400).json({error: 'Invalid game id'});
-        return;
-    }
-    const entry = await kv.get(['games', gameId]);
-    if (!entry.value) {
-        res.status(404).json({error: 'Game not found'});
-        return;
-    }
-    await kv.delete(['games', gameId]);
-    res.json({message: `Game ${gameId} deleted`});
-});
-
 app.put('/games/:id/:guess', async (req: Request, res: Response) => {
     // We do some validation on the guess before passing it to
     // the game instance for checking
